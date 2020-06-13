@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+# Copyright 2018 BlueData Software, Inc.
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -o pipefail
+SELF=$(readlink -nf $0)
+export CONFIG_BASE_DIR=$(dirname ${SELF})
+
+source ${CONFIG_BASE_DIR}/logging.sh
+source ${CONFIG_BASE_DIR}/utils.sh
+
+if [[ "$1" == "--addnodes" ]]; then
+    ## Nothing to do on the existing nodes when we receive this notification.
+    exit 0
+elif [[ "$1" == "--delnodes" ]]; then
+    ## Nothing to do on the existing nodes when we receive this notification.
+    exit 0
+elif [[ "$1" == "--configure" ]]; then
+    log "Starting configuration ... "
+
+    ## Fall through to start the configuration.
+else
+    echo "ERROR: Unknown command line option(s): '$@'"
+    exit 10
+fi
+
+source ${CONFIG_BASE_DIR}/macros.sh
+export FQDN="$(invoke_bdvcli namespace node fqdn)"
+export DISTRO="$(invoke_bdvcli namespace node distro_id)"
+export NODEGROUP="$(invoke_bdvcli namespace node nodegroup_id)"
+
+export MYSQL_FQDN="$(invoke_bdvcli namespace distros ${DISTRO}.${NODEGROUP}.roles.database.fqdns)"
+export WORDPRESS_FQDN="$(invoke_bdvcli namespace distros ${DISTRO}.${NODEGROUP}.roles.webserver.fqdns)"
+
+if [[ "$ROLE" == 'database' ]]; then
+    sh ${CONFIG_BASE_DIR}/db.sh wordpress wordpress wordpress ${WORDPRESS_FQDN}
+fi
+if [[ "$ROLE" == 'webserver' ]]; then
+    sh ${CONFIG_BASE_DIR}/wordpress.sh ${MYSQL_FQDN}
+fi
+REGISTER_START_SERVICE_SYSCTL httpd mysqld

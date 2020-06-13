@@ -1,0 +1,77 @@
+{
+    "apiVersion": "kubedirector.hpe.com/v1beta1",
+    "kind": "KubeDirectorApp",
+    "metadata": {
+        "name" : "wordpress"
+    },
+
+    "spec" : {
+        "systemdRequired": true,
+        "defaultPersistDirs" : ["/usr", "/opt", "/var"],
+        "config": {
+            "configMeta": {},
+            "roleServices": [
+                {
+                    "serviceIDs": [
+                        "mysqld"
+                     ],
+                     "roleID": "database"
+                },
+                {
+                    "serviceIDs": [
+                        "httpd"
+                    ],
+                    "roleID": "webserver"
+                }
+            ],
+            "selectedRoles": [
+                "webserver",
+                "database"
+            ]
+        },
+        "defaultImageRepoTag": "gse/wordpress:1.1",
+        "label": {
+            "name": "wordpress",
+            "description": "wordpress with mysql"
+        },
+        "distroID": "gse/wordpress",
+        "version": "1.1",
+        "configSchemaVersion": 7,
+        "services": [
+            {
+                "endpoint": {
+                    "port": 3306,
+                    "isDashboard": false
+                },
+                "id": "mysqld",
+                "label": {
+                    "name": "mysql database"
+                }
+            },
+            {
+                "endpoint": {
+                    "port": 80,
+                    "urlScheme": "http",
+                    "isDashboard": true
+                },
+                "id": "httpd",
+                "label": {
+                    "name": "wordpress webserver"
+                }
+            }
+        ],
+        "defaultConfigPackage":  {
+            "packageURL": "file:///opt/configscripts/appconfig-wp.tgz"
+        },
+        "roles": [
+            {
+                "cardinality": "1+",
+                "id": "webserver"
+            },
+            {
+                "cardinality": "1+",
+                "id": "database"
+            }
+        ]
+    }
+}

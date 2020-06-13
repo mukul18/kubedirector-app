@@ -1,0 +1,54 @@
+{
+    "apiVersion": "kubedirector.hpe.com/v1beta1",
+    "kind": "KubeDirectorApp",
+    "metadata": {
+        "name" : "hello-world"
+    },
+
+    "spec" : {
+        "systemdRequired": true,
+        "defaultPersistDirs" : ["/home"],
+        "config": {
+            "roleServices": [
+                {
+                    "serviceIDs": [
+                        "httpd"
+                    ],
+                    "roleID": "webserver"
+                }
+            ],
+            "selectedRoles": [
+                "webserver"
+            ]
+        },
+        "label": {
+            "name": "hello world",
+            "description": "hello world"
+        },
+        "distroID": "gse/helloworld",
+        "version": "1.2",
+        "configSchemaVersion": 7,
+        "services": [
+            {
+                "endpoint": {
+                    "port": 80,
+                    "isDashboard": false
+                },
+                "id": "httpd",
+                "label": {
+                    "name": "httpd"
+                }
+            }
+        ],
+        "defaultImageRepoTag": "gse/helloworld:1.2",
+        "defaultConfigPackage":  {
+            "packageURL": "file:///opt/configscripts/appconfig.tgz"
+        },
+        "roles": [
+            {
+                "cardinality": "1+",
+                "id": "webserver"
+            }
+        ]
+    }
+}
